@@ -1,0 +1,24 @@
+{
+    "name": "tjaup/passportscanner-laravel",
+    "description": "Laravel 12 integration for the framework-independent PassportScanner",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "composer-runtime-api": "^2.0",
+        "laravel/framework": "^12.0",
+        "tjaup/passportscanner": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "TjAup\\PassportScanner\\Laravel\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "TjAup\\PassportScanner\\Laravel\\PassportScannerServiceProvider"
+            ]
+        }
+    }
+}

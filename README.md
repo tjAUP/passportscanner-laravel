@@ -19,7 +19,7 @@ only this package. Composer installs the core package as a dependency:
 ```sh
 composer config repositories.passportscanner vcs https://github.com/tjAUP/passportscanner
 composer config repositories.passportscanner-laravel vcs https://github.com/tjAUP/passportscanner-laravel
-composer require "tjaup/passportscanner-laravel:^1.0"
+composer require "tjaup/passportscanner-laravel:*"
 ```
 
 The service provider is discovered automatically by Laravel. If the
@@ -28,6 +28,11 @@ application disables package discovery, add
 providers. Both repository entries belong in the consuming application's
 `composer.json` because Composer does not inherit repository settings from
 dependencies.
+
+`*` lets Composer select the latest compatible release available when you run
+`composer require` or `composer update tjaup/passportscanner-laravel -W`.
+`composer install` uses the versions in `composer.lock`; commit that file for
+reproducible deployments. Review major upgrades before deploying them.
 
 ## Add to a Blade form
 
@@ -70,7 +75,7 @@ row's result:
 ```js
 $(document).on('passportscanner:result', '.js-tjaup-passportscanner-input', function (event) {
     const result = event.originalEvent.detail;
-    console.log(result.fields.passport, result.fields.firstName);
+    console.log(result.fields.passportNo, result.fields.firstName);
     // Ask the traveler to verify the values before saving.
 });
 ```
@@ -78,8 +83,11 @@ $(document).on('passportscanner:result', '.js-tjaup-passportscanner-input', func
 jQuery is optional. The passport input is mapped automatically. Other field
 attributes are `data-field-name`, `data-field-first-name`,
 `data-field-last-name`, `data-field-title`, `data-field-gender`,
-`data-field-dob`, `data-field-expiry`, `data-field-nationality`, and
-`data-field-passport-img`. `passportImg` must point to a file input if the
+`data-field-dob`, `data-field-expiry`, `data-field-nationality`,
+`data-field-passport-no`, `data-field-document-code`,
+`data-field-issuing-country-code`, `data-field-nationality-code`,
+`data-field-sex`, `data-field-optional-data`, and `data-field-passport-img`.
+`passportImg` must point to a file input if the
 selected or captured image should be attached to the form. Optional settings
 include `data-date-format` (PHP `date_format()` style, default `Y-m-d`) and
 `data-country-names` (a JSON map such as `{"MY":"Malaysia"}`).
@@ -91,8 +99,12 @@ but a controlled form should also update the state it submits. The script can
 be placed in the Inertia root Blade layout; scanner inputs added during
 client-side navigation initialize automatically.
 
-The result event includes `detail.fields`, `detail.verifiedCount`, and
-`detail.complete`. Verify the populated fields against the passport before
+The result event includes `detail.fields`, `detail.checks`,
+`detail.verifiedCount`, and `detail.complete`. The scanned passport number is
+available as both `detail.fields.passport` and `detail.fields.passportNo`.
+The MRZ also provides a document code, issuing country code, nationality code,
+sex marker, and issuer-defined optional data when readable. Optional data has
+no universal meaning. Verify the populated fields against the passport before
 saving. The scanner does not submit the form or upload the image. More browser
 configuration is documented in the
 [core README](https://github.com/tjAUP/passportscanner#readme).

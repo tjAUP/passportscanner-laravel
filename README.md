@@ -34,33 +34,143 @@ dependencies.
 `composer install` uses the versions in `composer.lock`; commit that file for
 reproducible deployments. Review major upgrades before deploying them.
 
-## Add to a Blade form
+## Complete Laravel Blade example
 
 Place `@passportScannerAssets` once in the layout or page that contains
 passport inputs, preferably inside `<head>`. It loads the scanner script with
 `defer`. The package serves the script and local OCR assets through its own
 Laravel route. No asset path is needed in the view.
 
+In the layout's `<head>`:
+
 ```blade
 @passportScannerAssets
+```
 
+In the Blade form, use the scanner class on the passport number input. The
+matching `data-field-*` attributes tell it which other fields to fill in the
+same traveler row:
+
+```blade
 <form method="post" enctype="multipart/form-data">
     @csrf
     @foreach ($travelers as $index => $traveler)
+        @php
+            $oldKey = 'travelers.' . $index . '.';
+        @endphp
         <div class="traveler-row">
-            <input name="travelers[{{ $index }}][firstName]"
-                   class="traveler-first-name"
-                   value="{{ old('travelers.' . $index . '.firstName', $traveler->firstName ?? '') }}">
-            <input name="travelers[{{ $index }}][passport]"
+            <label>Full name
+                <input name="travelers[{{ $index }}][name]" class="traveler-name"
+                       value="{{ old($oldKey . 'name', $traveler->name ?? '') }}">
+            </label>
+            <label>Given names
+                <input name="travelers[{{ $index }}][firstName]" class="traveler-first-name"
+                       value="{{ old($oldKey . 'firstName', $traveler->firstName ?? '') }}">
+            </label>
+            <label>Surname
+                <input name="travelers[{{ $index }}][lastName]" class="traveler-last-name"
+                       value="{{ old($oldKey . 'lastName', $traveler->lastName ?? '') }}">
+            </label>
+            <label>Title
+                <select name="travelers[{{ $index }}][title]" class="traveler-title">
+                    <option value="">Select</option>
+                    <option value="MR" @selected(old($oldKey . 'title', $traveler->title ?? '') === 'MR')>Mr</option>
+                    <option value="MS" @selected(old($oldKey . 'title', $traveler->title ?? '') === 'MS')>Ms</option>
+                </select>
+            </label>
+            <label>Gender
+                <select name="travelers[{{ $index }}][gender]" class="traveler-gender">
+                    <option value="">Select</option>
+                    <option value="male" @selected(old($oldKey . 'gender', $traveler->gender ?? '') === 'male')>Male</option>
+                    <option value="female" @selected(old($oldKey . 'gender', $traveler->gender ?? '') === 'female')>Female</option>
+                </select>
+            </label>
+            <label for="traveler-{{ $index }}-passport">Passport number</label>
+            <input id="traveler-{{ $index }}-passport"
+                   name="travelers[{{ $index }}][passportNo]"
                    class="js-tjaup-passportscanner-input"
+                   value="{{ old($oldKey . 'passportNo', $traveler->passportNo ?? '') }}"
                    data-field-root=".traveler-row"
+                   data-field-name=".traveler-name"
                    data-field-first-name=".traveler-first-name"
-                   value="{{ old('travelers.' . $index . '.passport', $traveler->passport ?? '') }}">
+                   data-field-last-name=".traveler-last-name"
+                   data-field-title=".traveler-title"
+                   data-field-gender=".traveler-gender"
+                   data-field-dob=".traveler-dob"
+                   data-field-expiry=".traveler-expiry"
+                   data-field-nationality=".traveler-nationality"
+                   data-field-nationality-code=".traveler-nationality-code"
+                   data-field-document-code=".traveler-document-code"
+                   data-field-issuing-country-code=".traveler-issuing-country-code"
+                   data-field-sex=".traveler-sex"
+                   data-field-optional-data=".traveler-optional-data"
+                   data-field-passport-img=".traveler-passport-image"
+                   data-date-format="Y-m-d"
+                   data-country-names='{"MY":"Malaysia","SG":"Singapore","US":"United States"}'>
+            <label>Date of birth
+                <input type="date" name="travelers[{{ $index }}][dob]" class="traveler-dob"
+                       value="{{ old($oldKey . 'dob', $traveler->dob ?? '') }}">
+            </label>
+            <label>Expiry date
+                <input type="date" name="travelers[{{ $index }}][expiry]" class="traveler-expiry"
+                       value="{{ old($oldKey . 'expiry', $traveler->expiry ?? '') }}">
+            </label>
+            <label>Nationality
+                <select name="travelers[{{ $index }}][nationality]" class="traveler-nationality">
+                    <option value="">Select</option>
+                    @foreach (['Malaysia', 'Singapore', 'United States'] as $country)
+                        <option value="{{ $country }}" @selected(old($oldKey . 'nationality', $traveler->nationality ?? '') === $country)>{{ $country }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label>Nationality code
+                <input name="travelers[{{ $index }}][nationalityCode]" class="traveler-nationality-code"
+                       value="{{ old($oldKey . 'nationalityCode', $traveler->nationalityCode ?? '') }}">
+            </label>
+            <label>Document code
+                <input name="travelers[{{ $index }}][documentCode]" class="traveler-document-code"
+                       value="{{ old($oldKey . 'documentCode', $traveler->documentCode ?? '') }}">
+            </label>
+            <label>Issuing country code
+                <input name="travelers[{{ $index }}][issuingCountryCode]" class="traveler-issuing-country-code"
+                       value="{{ old($oldKey . 'issuingCountryCode', $traveler->issuingCountryCode ?? '') }}">
+            </label>
+            <label>MRZ sex marker
+                <input name="travelers[{{ $index }}][sex]" class="traveler-sex"
+                       value="{{ old($oldKey . 'sex', $traveler->sex ?? '') }}">
+            </label>
+            <label>Issuer optional data
+                <input name="travelers[{{ $index }}][optionalData]" class="traveler-optional-data"
+                       value="{{ old($oldKey . 'optionalData', $traveler->optionalData ?? '') }}">
+            </label>
+            <label>Passport image
+                <input type="file" name="travelers[{{ $index }}][passportImg]"
+                       class="traveler-passport-image" accept="image/jpeg,image/png,image/webp">
+            </label>
+            <output class="scan-review" aria-live="polite"></output>
         </div>
     @endforeach
-    <button type="submit">Save</button>
+    <button type="submit">Save after checking each passport</button>
 </form>
+<script>
+document.addEventListener('passportscanner:result', function (event) {
+    const row = event.target.closest('.traveler-row');
+    if (!row) return;
+    const { fields, checks, verifiedCount, complete } = event.detail;
+    row.querySelector('.scan-review').textContent =
+        `Verified ${verifiedCount}/3 checked fields. ` +
+        (checks.passport && fields.passportNo ? 'Passport number read. ' : 'Check the passport number. ') +
+        (complete ? 'Review all values before saving.' : 'Fill missing values manually.');
+});
+</script>
 ```
+
+Set the form's `action` to your application's save route. The scanner
+does not submit it. The input named `passportNo` is filled automatically;
+`detail.fields.passport` and `detail.fields.passportNo` contain the same
+verified number. The nationality dropdown accepts the country names listed
+in `data-country-names`, while `nationalityCode` keeps the three-letter MRZ
+code when no option matches. Issuer optional data can be empty.
 
 `data-field-root` scopes each mapping to its own row. Inputs added after page
 load initialize automatically, and removing a row releases its scanner. If
@@ -74,9 +184,10 @@ row's result:
 
 ```js
 $(document).on('passportscanner:result', '.js-tjaup-passportscanner-input', function (event) {
-    const result = event.originalEvent.detail;
-    console.log(result.fields.passportNo, result.fields.firstName);
-    // Ask the traveler to verify the values before saving.
+    const { fields, checks } = event.originalEvent.detail;
+    const passportNo = checks.passport ? fields.passportNo : undefined;
+    const firstName = fields.firstName;
+    // Use these values in your form state after the traveler verifies them.
 });
 ```
 

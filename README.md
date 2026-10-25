@@ -107,6 +107,7 @@ same traveler row:
                    data-field-optional-data=".traveler-optional-data"
                    data-field-passport-img=".traveler-passport-image"
                    data-date-format="Y-m-d"
+                   data-auto-capture-count="1"
                    data-country-names='{"MY":"Malaysia","SG":"Singapore","US":"United States"}'>
             <label>Date of birth
                 <input type="date" name="travelers[{{ $index }}][dob]" class="traveler-dob"
@@ -164,6 +165,15 @@ The scanner fills the mapped inputs directly. No page-level JavaScript or
 jQuery handler is needed to transfer the passport number, dates, or other
 details into the form.
 
+`data-auto-capture-count` controls automatic camera frames from 1 to 10,
+including the first readable frame. The example uses 1 for immediate capture.
+For time-based capture instead, remove that attribute and set
+`data-auto-capture-hold-seconds="2"` (allowed range 0–30 seconds). The scanner
+then takes roughly one additional frame per second, up to 10 total. If both
+attributes are set, it spreads the chosen count across the hold time. The
+default is 4 frames over 3 seconds. The manual **Capture & scan** button and
+uploaded images each use one frame.
+
 `data-field-root` scopes each mapping to its own row. Inputs added after page
 load initialize automatically, and removing a row releases its scanner. If
 a row is hidden but remains in the DOM, call
@@ -195,7 +205,8 @@ attributes are `data-field-name`, `data-field-first-name`,
 `data-field-sex`, `data-field-optional-data`, and `data-field-passport-img`.
 `passportImg` must point to a file input if the
 selected or captured image should be attached to the form. Optional settings
-include `data-date-format` (PHP `date_format()` style, default `Y-m-d`) and
+include `data-date-format` (PHP `date_format()` style, default `Y-m-d`),
+`data-auto-capture-count`, `data-auto-capture-hold-seconds`, and
 `data-country-names` (a JSON map such as `{"MY":"Malaysia"}`).
 
 If the form is submitted with Inertia's `useForm` or another component state

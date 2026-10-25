@@ -110,6 +110,8 @@ fields to fill in the same traveler row:
                    data-field-passport-img=".traveler-passport-image"
                    data-date-format="Y-m-d"
                    data-auto-capture-count="1"
+                   data-auto-capture-hold-seconds="0"
+                   data-log-results="false"
                    data-country-names='{"MY":"Malaysia","SG":"Singapore","US":"United States"}'>
             <label>Date of birth
                 <input type="date" name="travelers[{{ $index }}][dob]" class="traveler-dob"
@@ -169,13 +171,12 @@ jQuery handler is needed to transfer the passport number, dates, or other
 details into the form.
 
 `data-auto-capture-count` controls automatic camera frames from 1 to 10,
-including the first readable frame. The example uses 1 for immediate capture.
-For time-based capture instead, remove that attribute and set
-`data-auto-capture-hold-seconds="2"` (allowed range 0–30 seconds). The scanner
-then takes roughly one additional frame per second, up to 10 total. If both
-attributes are set, it spreads the chosen count across the hold time. The
-default is 4 frames over 3 seconds. The manual **Capture & scan** button and
-uploaded images each use one frame.
+including the first readable frame. The example sets the count to 1 and the
+hold time to 0 for immediate capture. Set both attributes to `4` and `3` for
+four frames over three seconds, which is also the default when both are
+omitted. If you set only `data-auto-capture-hold-seconds` (0–30 seconds), the
+scanner takes roughly one additional frame per second, up to 10 total. The
+manual **Capture & scan** button and uploaded images each use one frame.
 
 `data-field-root` scopes each mapping to its own row. Inputs added after page
 load initialize automatically, and removing a row releases its scanner. If
@@ -209,13 +210,16 @@ attributes are `data-field-name`, `data-field-first-name`,
 `passportImg` must point to a file input if the
 selected or captured image should be attached to the form. Optional settings
 include `data-date-format` (PHP `date_format()` style, default `Y-m-d`),
-`data-auto-capture-count`, `data-auto-capture-hold-seconds`, and
-`data-country-names` (a JSON map such as `{"MY":"Malaysia"}`). For
-debugging, add `data-log-results="true"` to the scanner input. Each scan then
-logs an array containing one object with every MRZ field; missing or
-unverified values are `null`, such as `expiry: null`. The passport image and
-raw OCR text are excluded. Leave this option off outside debugging because
-the console displays personal passport details.
+`data-auto-capture-count`, `data-auto-capture-hold-seconds`,
+`data-country-names` (a JSON map such as `{"MY":"Malaysia"}`), and
+`data-log-results`. The complete example sets each of these. For debugging,
+change `data-log-results="false"` to `"true"`. A console log labeled
+`PassportScanner scan results` then shows an array with one object containing
+every MRZ field. Missing or unverified values are `null`, such as
+`expiry: null`; failed scans include `accepted`, `verifiedCount`, and `checks`
+with all field values `null`. The image and raw OCR text are excluded. Leave
+logging off outside debugging because the console displays accepted passport
+details.
 
 If the form is submitted with Inertia's `useForm` or another component state
 object, handle `passportscanner:result` and copy `result.fields` into that

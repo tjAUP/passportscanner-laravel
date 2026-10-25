@@ -210,7 +210,12 @@ attributes are `data-field-name`, `data-field-first-name`,
 selected or captured image should be attached to the form. Optional settings
 include `data-date-format` (PHP `date_format()` style, default `Y-m-d`),
 `data-auto-capture-count`, `data-auto-capture-hold-seconds`, and
-`data-country-names` (a JSON map such as `{"MY":"Malaysia"}`).
+`data-country-names` (a JSON map such as `{"MY":"Malaysia"}`). For
+debugging, add `data-log-results="true"` to the scanner input. Each scan then
+logs an array containing one object with every MRZ field; missing or
+unverified values are `null`, such as `expiry: null`. The passport image and
+raw OCR text are excluded. Leave this option off outside debugging because
+the console displays personal passport details.
 
 If the form is submitted with Inertia's `useForm` or another component state
 object, handle `passportscanner:result` and copy `result.fields` into that

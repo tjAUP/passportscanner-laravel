@@ -91,6 +91,7 @@ same traveler row:
                    class="js-tjaup-passportscanner-input"
                    value="{{ old($oldKey . 'passportNo', $traveler->passportNo ?? '') }}"
                    data-field-root=".traveler-row"
+                   data-field-passport-no=".js-tjaup-passportscanner-input"
                    data-field-name=".traveler-name"
                    data-field-first-name=".traveler-first-name"
                    data-field-last-name=".traveler-last-name"
@@ -147,22 +148,10 @@ same traveler row:
                 <input type="file" name="travelers[{{ $index }}][passportImg]"
                        class="traveler-passport-image" accept="image/jpeg,image/png,image/webp">
             </label>
-            <output class="scan-review" aria-live="polite"></output>
         </div>
     @endforeach
     <button type="submit">Save after checking each passport</button>
 </form>
-<script>
-document.addEventListener('passportscanner:result', function (event) {
-    const row = event.target.closest('.traveler-row');
-    if (!row) return;
-    const { fields, checks, verifiedCount, complete } = event.detail;
-    row.querySelector('.scan-review').textContent =
-        `Verified ${verifiedCount}/3 checked fields. ` +
-        (checks.passport && fields.passportNo ? 'Passport number read. ' : 'Check the passport number. ') +
-        (complete ? 'Review all values before saving.' : 'Fill missing values manually.');
-});
-</script>
 ```
 
 Set the form's `action` to your application's save route. The scanner
@@ -171,6 +160,9 @@ does not submit it. The input named `passportNo` is filled automatically;
 verified number. The nationality dropdown accepts the country names listed
 in `data-country-names`, while `nationalityCode` keeps the three-letter MRZ
 code when no option matches. Issuer optional data can be empty.
+The scanner fills the mapped inputs directly. No page-level JavaScript or
+jQuery handler is needed to transfer the passport number, dates, or other
+details into the form.
 
 `data-field-root` scopes each mapping to its own row. Inputs added after page
 load initialize automatically, and removing a row releases its scanner. If
@@ -178,9 +170,12 @@ a row is hidden but remains in the DOM, call
 `PassportScanner.stop(passportInput)` when hiding it and
 `PassportScanner.initFromElement(passportInput)` when showing it again.
 
-The passport input receives a bubbling native `passportscanner:result` event
-after a usable scan. For example, a delegated jQuery listener can read each
-row's result:
+### Optional result event
+
+The passport input also emits a bubbling native `passportscanner:result` event
+after a usable scan. Listen only if your application needs an extra reaction
+after the inputs are filled. For example, a delegated jQuery listener can read
+each row's result:
 
 ```js
 $(document).on('passportscanner:result', '.js-tjaup-passportscanner-input', function (event) {

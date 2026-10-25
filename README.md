@@ -85,8 +85,8 @@ fields to fill in the same traveler row:
                     <option value="female" @selected(old($oldKey . 'gender', $traveler->gender ?? '') === 'female')>Female</option>
                 </select>
             </label>
-            <label for="traveler-{{ $index }}-passport">Passport number</label>
-            <input id="traveler-{{ $index }}-passport"
+            <label for="traveler-{{ $index }}-passport-no">Passport number</label>
+            <input id="traveler-{{ $index }}-passport-no"
                    name="travelers[{{ $index }}][passportNo]"
                    class="traveler-passport-no"
                    value="{{ old($oldKey . 'passportNo', $traveler->passportNo ?? '') }}">

@@ -47,9 +47,9 @@ In the layout's `<head>`:
 @passportScannerAssets
 ```
 
-In the Blade form, use the scanner class on the passport number input. The
-matching `data-field-*` attributes tell it which other fields to fill in the
-same traveler row:
+In the Blade form, keep the passport number input separate from the disabled
+scanner input. The matching `data-field-*` attributes tell the scanner which
+fields to fill in the same traveler row:
 
 ```blade
 <form method="post" enctype="multipart/form-data">
@@ -88,10 +88,12 @@ same traveler row:
             <label for="traveler-{{ $index }}-passport">Passport number</label>
             <input id="traveler-{{ $index }}-passport"
                    name="travelers[{{ $index }}][passportNo]"
-                   class="js-tjaup-passportscanner-input"
-                   value="{{ old($oldKey . 'passportNo', $traveler->passportNo ?? '') }}"
+                   class="traveler-passport-no"
+                   value="{{ old($oldKey . 'passportNo', $traveler->passportNo ?? '') }}">
+            <input type="hidden" name="travelers[{{ $index }}][passport_scan]"
+                   class="js-tjaup-passportscanner-input" disabled
                    data-field-root=".traveler-row"
-                   data-field-passport-no=".js-tjaup-passportscanner-input"
+                   data-field-passport-no=".traveler-passport-no"
                    data-field-name=".traveler-name"
                    data-field-first-name=".traveler-first-name"
                    data-field-last-name=".traveler-last-name"
@@ -156,7 +158,8 @@ same traveler row:
 ```
 
 Set the form's `action` to your application's save route. The scanner
-does not submit it. The input named `passportNo` is filled automatically;
+does not submit it. The mapped input named `passportNo` is filled after its
+MRZ check passes; the scanner input stays empty and is not submitted.
 `detail.fields.passport` and `detail.fields.passportNo` contain the same
 verified number. The nationality dropdown accepts the country names listed
 in `data-country-names`, while `nationalityCode` keeps the three-letter MRZ
@@ -177,12 +180,12 @@ uploaded images each use one frame.
 `data-field-root` scopes each mapping to its own row. Inputs added after page
 load initialize automatically, and removing a row releases its scanner. If
 a row is hidden but remains in the DOM, call
-`PassportScanner.stop(passportInput)` when hiding it and
-`PassportScanner.initFromElement(passportInput)` when showing it again.
+`PassportScanner.stop(scannerInput)` when hiding it and
+`PassportScanner.initFromElement(scannerInput)` when showing it again.
 
 ### Optional result event
 
-The passport input also emits a bubbling native `passportscanner:result` event
+The scanner input also emits a bubbling native `passportscanner:result` event
 after a usable scan. Listen only if your application needs an extra reaction
 after the inputs are filled. For example, a delegated jQuery listener can read
 each row's result:
@@ -196,7 +199,7 @@ $(document).on('passportscanner:result', '.js-tjaup-passportscanner-input', func
 });
 ```
 
-jQuery is optional. The passport input is mapped automatically. Other field
+jQuery is optional. Map the passport number field explicitly. Other field
 attributes are `data-field-name`, `data-field-first-name`,
 `data-field-last-name`, `data-field-title`, `data-field-gender`,
 `data-field-dob`, `data-field-expiry`, `data-field-nationality`,

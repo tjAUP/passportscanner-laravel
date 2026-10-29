@@ -107,10 +107,13 @@ fields to fill in the same traveler row:
                    data-field-issuing-country-code=".traveler-issuing-country-code"
                    data-field-sex=".traveler-sex"
                    data-field-optional-data=".traveler-optional-data"
+                   data-field-mrz=".traveler-mrz"
                    data-field-passport-img=".traveler-passport-image"
                    data-date-format="Y-m-d"
                    data-auto-capture-count="1"
                    data-auto-capture-hold-seconds="0"
+                   data-language="en"
+                   data-status-messages='{}'
                    data-log-results="false"
                    data-country-names='{"MY":"Malaysia","SG":"Singapore","US":"United States"}'>
             <label>Date of birth
@@ -148,6 +151,9 @@ fields to fill in the same traveler row:
             <label>Issuer optional data
                 <input name="travelers[{{ $index }}][optionalData]" class="traveler-optional-data"
                        value="{{ old($oldKey . 'optionalData', $traveler->optionalData ?? '') }}">
+            </label>
+            <label>MRZ lines
+                <textarea name="travelers[{{ $index }}][mrz]" class="traveler-mrz">{{ old($oldKey . 'mrz', $traveler->mrz ?? '') }}</textarea>
             </label>
             <label>Passport image
                 <input type="file" name="travelers[{{ $index }}][passportImg]"
@@ -206,20 +212,20 @@ attributes are `data-field-name`, `data-field-first-name`,
 `data-field-dob`, `data-field-expiry`, `data-field-nationality`,
 `data-field-passport-no`, `data-field-document-code`,
 `data-field-issuing-country-code`, `data-field-nationality-code`,
-`data-field-sex`, `data-field-optional-data`, and `data-field-passport-img`.
+`data-field-sex`, `data-field-optional-data`, `data-field-mrz`, and `data-field-passport-img`.
 `passportImg` must point to a file input if the
 selected or captured image should be attached to the form. Optional settings
 include `data-date-format` (PHP `date_format()` style, default `Y-m-d`),
 `data-auto-capture-count`, `data-auto-capture-hold-seconds`,
 `data-country-names` (a JSON map such as `{"MY":"Malaysia"}`), and
-`data-log-results`. The complete example sets each of these. For debugging,
-change `data-log-results="false"` to `"true"`. A console log labeled
-`PassportScanner scan results` then shows an array with one object containing
-every MRZ field. Missing or unverified values are `null`, such as
-`expiry: null`; failed scans include `accepted`, `verifiedCount`, and `checks`
-with all field values `null`. The image and raw OCR text are excluded. Leave
-logging off outside debugging because the console displays accepted passport
-details.
+`data-language`, `data-status-messages`, and `data-log-results`. The complete
+example sets each of these. For debugging, set `data-log-results="true"`.
+The console shows `PassportScanner scan results` as ordered `{field, value}`
+rows: scan checks, `mrz`, passport number, names, dates, and other details.
+Missing or unverified values are `null`. On rejected scans, `mrz` may still
+contain the unverified OCR candidate; other fields are `null`. The image and
+full raw OCR output are excluded. Keep logging off outside debugging because
+it exposes passport details.
 
 If the form is submitted with Inertia's `useForm` or another component state
 object, handle `passportscanner:result` and copy `result.fields` into that
@@ -237,6 +243,27 @@ no universal meaning. Verify the populated fields against the passport before
 saving. The scanner does not submit the form or upload the image. More browser
 configuration is documented in the
 [core README](https://github.com/tjAUP/passportscanner#readme).
+
+
+## Status messages (v2.2.0)
+
+This release requires core `^2.2`. Status text uses short instructions:
+green with a tick for success, yellow with a warning triangle for missing
+details, and red with a cross for failure. Scanning pulses blue. Icons are
+bundled and do not require Font Awesome. Always check all details before saving.
+
+```html
+data-language="en"
+data-status-messages='{}'
+```
+
+Use `ms` for Malay or `zh` for Simplified Chinese; `en` (English) is the default.
+
+The language setting changes status messages only, not button labels or OCR.
+Each scanner can have its own language. Unknown languages fall back to English.
+`statusMessages` can override individual messages or supply another language.
+See the [message keys and placeholders](https://github.com/tjAUP/passportscanner#status-language-and-wording).
+The `mrz` result contains normalized OCR-read lines, not guaranteed exact text.
 
 ## Local OCR assets and privacy
 
